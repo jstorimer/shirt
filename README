@@ -1,0 +1,5 @@
+Shirt
+=====
+
+Shirt is a simple Unix shell written in pure Ruby. It was written over a series of blog posts starting with http://jstorimer.com/2012/02/16/a-unix-shell-in-ruby.html.
+
