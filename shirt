@@ -1,0 +1,9 @@
+#!/usr/bin/env ruby
+
+$stdin.each_line do |line|
+  pid = fork {
+    exec line
+  }
+
+  Process.wait pid
+end
