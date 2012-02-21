@@ -2,7 +2,7 @@
 require 'shellwords'
 
 BUILTINS = {
-  'cd' => lambda { |dir| Dir.chdir(dir) },
+  'cd' => lambda { |dir = ENV["HOME"]| Dir.chdir(dir) },
   'exit' => lambda { |code = 0| exit(code.to_i) },
   'exec' => lambda { |*command| exec *command }
 }
