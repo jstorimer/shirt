@@ -1,13 +1,13 @@
 #!/usr/bin/env ruby
 
-$stdout.print '-> '
+loop do
+  $stdout.print '-> '
+  line = $stdin.gets.strip
 
-$stdin.each_line do |line|
   pid = fork {
     exec line
   }
 
   Process.wait pid
-  $stdout.print '-> '
 end
 
