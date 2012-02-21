@@ -1,7 +1,11 @@
 #!/usr/bin/env ruby
 require 'shellwords'
 
-BUILTINS = {'cd' => lambda { |dir| Dir.chdir(dir) }}
+BUILTINS = {
+  'cd' => lambda { |dir| Dir.chdir(dir) },
+  'exit' => lambda { exit },
+  'exec' => lambda { |*command| exec *command }
+}
 
 loop do
   $stdout.print '-> '
