@@ -10,7 +10,11 @@ def main
     if BUILTINS[command]
       BUILTINS[command].call(*arguments)
     else
-      spawn_command(command, *arguments)
+      pid = fork {
+        exec line
+      }
+
+      Process.wait pid
     end
   end
 end
@@ -26,14 +30,6 @@ BUILTINS = {
 }
 
 ENV['PROMPT'] = '-> '
-
-def spawn_command(command, *arguments)
-  pid = fork {
-    exec command, *arguments
-  }
-
-  Process.wait pid
-end
 
 main
 
