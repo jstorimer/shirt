@@ -11,8 +11,10 @@ BUILTINS = {
   }
 }
 
+ENV['PROMPT'] = '-> '
+
 loop do
-  $stdout.print '-> '
+  $stdout.print ENV['PROMPT']
   line = $stdin.gets.strip
   command, *arguments = Shellwords.shellsplit(line)
 
