@@ -1,6 +1,20 @@
 #!/usr/bin/env ruby
 require 'shellwords'
 
+def main
+  loop do
+    $stdout.print ENV['PROMPT']
+    line = $stdin.gets.strip
+    command, *arguments = Shellwords.shellsplit(line)
+
+    if BUILTINS[command]
+      BUILTINS[command].call(*arguments)
+    else
+      spawn_command(command, *arguments)
+    end
+  end
+end
+
 BUILTINS = {
   'cd' => lambda { |dir = ENV["HOME"]| Dir.chdir(dir) },
   'exit' => lambda { |code = 0| exit(code.to_i) },
@@ -13,19 +27,13 @@ BUILTINS = {
 
 ENV['PROMPT'] = '-> '
 
-loop do
-  $stdout.print ENV['PROMPT']
-  line = $stdin.gets.strip
-  command, *arguments = Shellwords.shellsplit(line)
+def spawn_command(command, *arguments)
+  pid = fork {
+    exec command, *arguments
+  }
 
-  if BUILTINS[command]
-    BUILTINS[command].call(*arguments)
-  else
-    pid = fork {
-      exec line
-    }
-
-    Process.wait pid
-  end
+  Process.wait pid
 end
+
+main
 
