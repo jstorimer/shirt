@@ -2,20 +2,85 @@
 require 'shellwords'
 
 def main
+
+#  trap(:CHLD) do
+#    puts 'Child finished'
+#    puts Process.wait2
+#  end
+
   loop do
     $stdout.print ENV['PROMPT']
     line = $stdin.gets.strip
-    command, *arguments = Shellwords.shellsplit(line)
 
-    if BUILTINS[command]
-      BUILTINS[command].call(*arguments)
-    else
-      pid = fork {
-        exec command, *arguments
-      }
+    # split the line into commands based on the pipe character
+    commands = line.scan( /([^"'|]+)|["']([^"']+)["']/ ).flatten.compact
 
-      Process.wait pid
+    # set up some variables for the loop
+    next_in = $stdin
+    next_out = $stdout
+    pipe = []
+
+    commands.each_with_index do |command, index|
+      program, *arguments = Shellwords.shellsplit(command)
+
+      # We can't do pipes with builtins because we can't reopen their streams,
+      # they share them with the shell itself
+      if BUILTINS[command]
+        BUILTINS[command].call(*arguments)
+
+      else
+
+        # create a new pipe unless this is the last command in the line
+        if index+1 < commands.size
+          pipe = IO.pipe
+
+          # set the next stdout to be assigned to the writer end of the pipe
+          next_out = pipe.last
+        else
+          # if this is the last command in the line then it should write to
+          # stdout
+          next_out = $stdout
+        end
+
+        pid = fork {
+
+          unless next_out == $stdout
+            $stdout.reopen(next_out)
+            next_out.close
+          end
+
+          unless next_in == $stdin
+            $stdin.reopen(next_in)
+            next_in.close
+          end
+
+          # each child gets a copy of all the pipes. It needs to close
+          # all the ones that it doesn't need otherwise the other processes
+          # think they're open and will continue to wait and see if it
+          # can read from them. Show how this can create an endless loop.
+          #to_keep = []
+          #to_keep << stdout.fileno if stdout
+          #to_keep << stdin.fileno if stdin
+
+          # close any ios that aren't our keepers
+          #pipes.flatten.reject {|io| to_keep.include?(io.fileno) }.each(&:close)
+
+          # reassign the keepers where applicable. Notice how the next
+          # process still respects what we've done in rubyland
+          #$stdout.reopen(stdout) if stdout
+          #$stdin.reopen(stdin) if stdin
+
+          exec program, *arguments
+        }
+
+        next_out.close unless next_out == $stdout
+        next_in.close unless next_in == $stdin
+        next_in = pipe.first
+      end
     end
+
+    # Now wait for all the kids to come home, rather than one at a time
+    Process.waitall
   end
 end
 
