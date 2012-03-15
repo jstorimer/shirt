@@ -44,31 +44,19 @@ def main
 
         pid = fork {
 
+          # reassign stdout unless it hasn't been changed
+          # close the local copy of it once its been assigned
           unless next_out == $stdout
             $stdout.reopen(next_out)
             next_out.close
           end
 
+          # reassign stdout unless it hasn't been changed
+          # close the local copy of it once its been assigned
           unless next_in == $stdin
             $stdin.reopen(next_in)
             next_in.close
           end
-
-          # each child gets a copy of all the pipes. It needs to close
-          # all the ones that it doesn't need otherwise the other processes
-          # think they're open and will continue to wait and see if it
-          # can read from them. Show how this can create an endless loop.
-          #to_keep = []
-          #to_keep << stdout.fileno if stdout
-          #to_keep << stdin.fileno if stdin
-
-          # close any ios that aren't our keepers
-          #pipes.flatten.reject {|io| to_keep.include?(io.fileno) }.each(&:close)
-
-          # reassign the keepers where applicable. Notice how the next
-          # process still respects what we've done in rubyland
-          #$stdout.reopen(stdout) if stdout
-          #$stdin.reopen(stdin) if stdin
 
           exec program, *arguments
         }
