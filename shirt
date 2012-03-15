@@ -11,7 +11,7 @@ def main
       BUILTINS[command].call(*arguments)
     else
       pid = fork {
-        exec line
+        exec command, *arguments
       }
 
       Process.wait pid
