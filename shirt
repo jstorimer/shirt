@@ -2,22 +2,16 @@
 require 'shellwords'
 
 def main
-
-#  trap(:CHLD) do
-#    puts 'Child finished'
-#    puts Process.wait2
-#  end
-
   loop do
     $stdout.print ENV['PROMPT']
     line = $stdin.gets.strip
 
-    # split the line into commands based on the pipe character
+    # split the line of input into commands on the pipe character
     commands = line.scan( /([^"'|]+)|["']([^"']+)["']/ ).flatten.compact
 
-    # set up some variables for the loop
-    next_in = $stdin
-    next_out = $stdout
+    # set up some placeholder variables for the loop
+    placeholder_in = $stdin
+    placeholder_out = $stdout
     pipe = []
 
     commands.each_with_index do |command, index|
@@ -25,8 +19,8 @@ def main
 
       # We can't do pipes with builtins because we can't reopen their streams,
       # they share them with the shell itself
-      if BUILTINS[command]
-        BUILTINS[command].call(*arguments)
+      if BUILTINS.has_key?(program)
+        BUILTINS[program].call(*arguments)
 
       else
 
@@ -35,35 +29,35 @@ def main
           pipe = IO.pipe
 
           # set the next stdout to be assigned to the writer end of the pipe
-          next_out = pipe.last
+          placeholder_out = pipe.last
         else
           # if this is the last command in the line then it should write to
           # stdout
-          next_out = $stdout
+          placeholder_out = $stdout
         end
 
         pid = fork {
 
           # reassign stdout unless it hasn't been changed
           # close the local copy of it once its been assigned
-          unless next_out == $stdout
-            $stdout.reopen(next_out)
-            next_out.close
+          unless placeholder_out == $stdout
+            $stdout.reopen(placeholder_out)
+            placeholder_out.close
           end
 
           # reassign stdout unless it hasn't been changed
           # close the local copy of it once its been assigned
-          unless next_in == $stdin
-            $stdin.reopen(next_in)
-            next_in.close
+          unless placeholder_in == $stdin
+            $stdin.reopen(placeholder_in)
+            placeholder_in.close
           end
 
           exec program, *arguments
         }
 
-        next_out.close unless next_out == $stdout
-        next_in.close unless next_in == $stdin
-        next_in = pipe.first
+        placeholder_out.close unless placeholder_out == $stdout
+        placeholder_in.close unless placeholder_in == $stdin
+        placeholder_in = pipe.first
       end
     end
 
