@@ -6,10 +6,8 @@ def main
     $stdout.print ENV['PROMPT']
     line = $stdin.gets.strip
 
-    # split the line of input into commands on the pipe character
     commands = line.scan( /([^"'|]+)|["']([^"']+)["']/ ).flatten.compact
 
-    # set up some placeholder variables for the loop
     placeholder_in = $stdin
     placeholder_out = $stdout
     pipe = []
@@ -17,36 +15,24 @@ def main
     commands.each_with_index do |command, index|
       program, *arguments = Shellwords.shellsplit(command)
 
-      # We can't do pipes with builtins because we can't reopen their streams,
-      # they share them with the shell itself
       if BUILTINS.has_key?(program)
         BUILTINS[program].call(*arguments)
 
       else
 
-        # create a new pipe unless this is the last command in the line
         if index+1 < commands.size
           pipe = IO.pipe
-
-          # set the next stdout to be assigned to the writer end of the pipe
           placeholder_out = pipe.last
         else
-          # if this is the last command in the line then it should write to
-          # stdout
           placeholder_out = $stdout
         end
 
         pid = fork {
-
-          # reassign stdout unless it hasn't been changed
-          # close the local copy of it once its been assigned
           unless placeholder_out == $stdout
             $stdout.reopen(placeholder_out)
             placeholder_out.close
           end
 
-          # reassign stdout unless it hasn't been changed
-          # close the local copy of it once its been assigned
           unless placeholder_in == $stdin
             $stdin.reopen(placeholder_in)
             placeholder_in.close
@@ -61,7 +47,6 @@ def main
       end
     end
 
-    # Now wait for all the kids to come home, rather than one at a time
     Process.waitall
   end
 end
