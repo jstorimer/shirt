@@ -1,14 +1,14 @@
 Shirt
 =====
 
-Shirt is a simple Unix shell written in pure Ruby. It takes inspiration from bash but is written mostly for educational purposes.
+Shirt is a simple Unix shell written in pure Ruby. It takes inspiration from bash and is written mostly for educational purposes.
 
 It was written over a series of blog posts on http://jstorimer.com.
 
 Links
 =====
 
-* [Part 1](http://jstorimer.com/2012/02/16/a-unix-shell-in-ruby.html)
-* [Part 2: Builtins](http://jstorimer.com/2012/02/21/a-unix-shell-in-ruby-builtins.html)
-* [C port of Shirt](https://github.com/PhilG/Shirt-in-C)
+* Part 1 - http://jstorimer.com/2012/02/16/a-unix-shell-in-ruby.html
+* Part 2: Builtins - http://jstorimer.com/2012/02/21/a-unix-shell-in-ruby-builtins.html
+* Part 3: A Login Shell and the PATH - http://jstorimer.com/2012/03/10/a-unix-shell-in-ruby-search-path.html
 
