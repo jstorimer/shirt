@@ -39,7 +39,7 @@ def main
 end
 
 def split_on_pipes(line)
-  line.scan( /([^"'|]+)|["']([^"']+)["']/ ).flatten.compact
+  line.scan( /([^"'|]+)|["']([^"']*)["']/ ).flatten.compact
 end
 
 def spawn_program(program, *arguments, placeholder_out, placeholder_in)
