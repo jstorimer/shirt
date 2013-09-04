@@ -4,7 +4,13 @@ require 'shellwords'
 def main
   loop do
     $stdout.print ENV['PROMPT']
-    line = $stdin.gets.strip
+    line = $stdin.gets
+
+    if line
+      line.strip!
+    else
+      exit
+    end
 
     commands = split_on_pipes(line)
 
