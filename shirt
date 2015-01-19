@@ -60,7 +60,12 @@ def spawn_program(program, *arguments, placeholder_out, placeholder_in)
       placeholder_in.close
     end
 
-    exec program, *arguments
+    case arguments.empty?
+      when true
+        exec [program, ""]
+      else
+        exec program, *arguments
+    end
   }
 end
 
